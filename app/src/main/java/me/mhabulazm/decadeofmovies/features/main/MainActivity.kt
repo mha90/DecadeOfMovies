@@ -5,11 +5,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import me.mhabulazm.decadeofmovies.R
+import me.mhabulazm.decadeofmovies.features.movieslist.MoviesListFragment
 
 class MainActivity : AppCompatActivity(), MainActivityConnector {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        addFragment(MoviesListFragment.newInstance())
     }
 
     override fun addFragment(fragment: Fragment, addToBackToStack: Boolean) {
