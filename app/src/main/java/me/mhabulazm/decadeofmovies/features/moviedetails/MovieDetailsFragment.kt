@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
@@ -20,6 +21,7 @@ class MovieDetailsFragment : Fragment(), IMovieDetailsView {
     private var movie: Movie? = null
     private lateinit var recyclerView: RecyclerView
     private lateinit var presenter: IMovieDetailsPresenter
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +36,7 @@ class MovieDetailsFragment : Fragment(), IMovieDetailsView {
     ): View? {
         val fragmentView = inflater.inflate(R.layout.fragment_movie_details, container, false)
         recyclerView = fragmentView.findViewById(R.id.movieImagesRecyclerView)
+        progressBar = fragmentView.findViewById(R.id.progressBar)
         return fragmentView
     }
 
@@ -41,18 +44,22 @@ class MovieDetailsFragment : Fragment(), IMovieDetailsView {
         super.onActivityCreated(savedInstanceState)
 
         movie?.let {
-            val title = it.title
             presenter = MovieDetailsPresenter(it, this)
 
-            movieTitleTextView.text = title
-            movieYearTextView.text = it.year.toString()
-            movieRatingRatingBar.rating = it.rating.toFloat()
-            movieCastTextView.text = it.cast?.convertToCommaSeparated()
-            movieGenresTextView.text = it.genres?.convertToCommaSeparated()
+            adaptMovieDetails(it)
 
             presenter.getMovieImages()
         }
 
+    }
+
+    private fun adaptMovieDetails(it: Movie) {
+        val title = it.title
+        movieTitleTextView.text = title
+        movieYearTextView.text = it.year.toString()
+        movieRatingRatingBar.rating = it.rating.toFloat()
+        movieCastTextView.text = it.cast?.convertToCommaSeparated()
+        movieGenresTextView.text = it.genres?.convertToCommaSeparated()
     }
 
 
@@ -82,11 +89,11 @@ class MovieDetailsFragment : Fragment(), IMovieDetailsView {
     }
 
     override fun showProgress() {
-
+        progressBar.visibility = View.VISIBLE
     }
 
     override fun hideProgress() {
-
+        progressBar.visibility = View.GONE
     }
 }
 

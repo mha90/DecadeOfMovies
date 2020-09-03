@@ -29,7 +29,6 @@ class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish,
     private lateinit var moviesSearchEditText: EditText
     private lateinit var presenter: IMoviesListPresenter
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -102,14 +101,6 @@ class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish,
                 ), true
             )
         }
-    }
-
-    override fun showProgress() {
-
-    }
-
-    override fun hideProgress() {
-
     }
 
     override fun showNoResultsMessage() {

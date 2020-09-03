@@ -1,8 +1,6 @@
 package me.mhabulazm.decadeofmovies.features.movieslist
 
 import android.content.Context
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import me.mhabulazm.decadeofmovies.R
 import me.mhabulazm.decadeofmovies.data.MoviesLocalDataSource
 import me.mhabulazm.decadeofmovies.model.Movie
