@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.fragment_movie_details.*
 import me.mhabulazm.decadeofmovies.R
 import me.mhabulazm.decadeofmovies.model.Movie
 
+
 private const val ARG_MOVIE = ""
 
 class MovieDetailsFragment : Fragment(), IMovieDetailsView {
@@ -42,7 +43,13 @@ class MovieDetailsFragment : Fragment(), IMovieDetailsView {
         movie?.let {
             val title = it.title
             presenter = MovieDetailsPresenter(it, this)
+
             movieTitleTextView.text = title
+            movieYearTextView.text = it.year.toString()
+            movieRatingRatingBar.rating = it.rating.toFloat()
+            movieCastTextView.text = it.cast?.convertToCommaSeparated()
+            movieGenresTextView.text = it.genres?.convertToCommaSeparated()
+
             presenter.getMovieImages()
         }
 
@@ -63,7 +70,13 @@ class MovieDetailsFragment : Fragment(), IMovieDetailsView {
         Toast.makeText(activity, "No data found", Toast.LENGTH_SHORT).show()
     }
 
+    private fun List<String>.convertToCommaSeparated(): String {
+        return this.joinToString(", ")
+    }
+
     override fun displayImages(imageUrls: List<String>) {
+        val spacing = resources.getDimensionPixelSize(R.dimen.gallery_spacing_margin)
+        recyclerView.addItemDecoration(GridSpacingItemDecoration(spacing))
         recyclerView.layoutManager = GridLayoutManager(requireActivity(), 2)
         recyclerView.adapter = MovieImagesListAdapter(imageUrls)
     }
