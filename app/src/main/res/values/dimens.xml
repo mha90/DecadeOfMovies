@@ -4,4 +4,5 @@
     <dimen name="gallery_spacing_margin">8dp</dimen>
     <dimen name="textSize">16sp</dimen>
     <dimen name="inner_spacing">8dp</dimen>
+    <dimen name="horizontal_margin">16dp</dimen>
 </resources>
