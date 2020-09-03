@@ -15,21 +15,20 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import me.mhabulazm.decadeofmovies.R
-import me.mhabulazm.decadeofmovies.data.MoviesLocalDataSource
 import me.mhabulazm.decadeofmovies.features.main.MainActivityConnector
 import me.mhabulazm.decadeofmovies.features.moviedetails.MovieDetailsFragment
 import me.mhabulazm.decadeofmovies.model.Movie
-import me.mhabulazm.decadeofmovies.utils.parseMoviesList
-import me.mhabulazm.decadeofmovies.utils.readRawFile
 
 
 class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish,
-    MoviesListAdapter.OnMovieClickListener {
+    MoviesListAdapter.OnMovieClickListener, IMoviesListView {
 
     private var adapter: MoviesListAdapter? = null
     private lateinit var filter: MoviesSearchFilter
     private lateinit var moviesRecyclerView: RecyclerView
     private lateinit var moviesSearchEditText: EditText
+    private lateinit var presenter: IMoviesListPresenter
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,58 +37,43 @@ class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish,
         val fragmentView = inflater.inflate(R.layout.fragment_movies_list, container, false)
         moviesRecyclerView = fragmentView.findViewById(R.id.moviesRecyclerView)
         moviesSearchEditText = fragmentView.findViewById(R.id.moviesSearchEditText)
+        presenter = MoviesListPresenter(this)
+        attachTextWatcher()
         return fragmentView
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
-        initAdapter()
-        attachTextWatcher()
-    }
-
-    private fun initAdapter() {
-        val moviesContentString = activity?.readRawFile(R.raw.movies)
-        val moviesList: List<Movie>? = moviesContentString?.parseMoviesList()
-
-        if (moviesList != null) {
-            MoviesLocalDataSource.populateTrie(moviesList)
-            initFilter(moviesList)
-
-            adapter = MoviesListAdapter(moviesList, filter, this)
-            moviesRecyclerView.layoutManager =
-                LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
-            moviesRecyclerView.adapter = adapter
-            moviesRecyclerView.setHasFixedSize(true)
-        }
+        presenter.getMoviesList(requireActivity())
     }
 
     private fun attachTextWatcher() {
         val textWatcher = object : TextWatcher {
             override fun afterTextChanged(editable: Editable) {
-                if (editable.toString().isBlank()) {
-                    adapter?.updateResults(null)
-                }
             }
 
             override fun beforeTextChanged(query: CharSequence?, p1: Int, p2: Int, p3: Int) {
             }
 
             override fun onTextChanged(query: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                adapter?.filter?.filter(query)
+                searchForMovie(query.toString())
             }
         }
         moviesSearchEditText.addTextChangedListener(textWatcher)
     }
 
-    private fun initFilter(moviesList: List<Movie>) {
-        filter = MoviesSearchFilter(this, moviesList)
+    private fun initFilter() {
+        filter = MoviesSearchFilter(this)
     }
 
     override fun publishResults(movies: List<Movie>?) {
         if (movies == null) {
             onEmptyState()
         }
+        updateResults(movies)
+    }
+
+    private fun updateResults(movies: List<Movie>?) {
         adapter?.updateResults(movies)
     }
 
@@ -104,7 +88,7 @@ class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish,
         }
     }
 
-    fun hideKeyboardFrom(context: Context, view: View) {
+    private fun hideKeyboardFrom(context: Context, view: View) {
         val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
@@ -118,6 +102,34 @@ class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish,
                 ), true
             )
         }
+    }
+
+    override fun showProgress() {
+
+    }
+
+    override fun hideProgress() {
+
+    }
+
+    override fun showNoResultsMessage() {
+        onEmptyState()
+    }
+
+    override fun searchForMovie(searchQuery: String?) {
+        if (searchQuery.isNullOrEmpty()) {
+            updateResults(null)
+            return
+        }
+        adapter?.filter?.filter(searchQuery)
+    }
+
+    override fun displayMoviesList(moviesList: List<Movie>) {
+        initFilter()
+        adapter = MoviesListAdapter(moviesList, filter, this)
+        moviesRecyclerView.layoutManager =
+            LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
+        moviesRecyclerView.adapter = adapter
     }
 
 }

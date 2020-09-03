@@ -31,7 +31,7 @@ class MoviesListAdapter(
         }
 
         fun bind(movie: Movie, onMovieClickListener: OnMovieClickListener) {
-            movieTitleTextView.text = "${movie.title}: ${movie.year}"
+            movieTitleTextView.text = movie.title
             ratingBar.rating = movie.rating.toFloat()
             movieTitleTextView.setOnClickListener {
                 onMovieClickListener.onMovieClick(movie)
@@ -71,11 +71,11 @@ class MoviesListAdapter(
     fun updateResults(results: List<Movie>?) {
         if (results == null) {
             queryResults = null
-
         } else {
             queryResults = results
-            notifyDataSetChanged()
+            submitList(results as MutableList<Movie>)
         }
+        notifyDataSetChanged()
     }
 
     interface OnMovieClickListener {
