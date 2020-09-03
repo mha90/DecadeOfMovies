@@ -7,12 +7,18 @@ import android.widget.Filter
 import android.widget.Filterable
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatRatingBar
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import me.mhabulazm.decadeofmovies.R
 import me.mhabulazm.decadeofmovies.model.Movie
 
-class MoviesListAdapter(private val movies: List<Movie>, private val filter: Filter) :
-    RecyclerView.Adapter<MoviesListAdapter.ViewHolder>(), Filterable {
+class MoviesListAdapter(
+    private val movies: List<Movie>,
+    private val filter: Filter,
+    private val onMovieClickListener: OnMovieClickListener
+) :
+    ListAdapter<Movie, MoviesListAdapter.ViewHolder>(DIFF_CALLBACK), Filterable {
 
     private var queryResults: List<Movie>? = null
 
@@ -24,9 +30,12 @@ class MoviesListAdapter(private val movies: List<Movie>, private val filter: Fil
             )
         }
 
-        fun bind(movie: Movie) {
-            movieTitleTextView.text = "${movie.title} : ${movie.year}"
+        fun bind(movie: Movie, onMovieClickListener: OnMovieClickListener) {
+            movieTitleTextView.text = "${movie.title}: ${movie.year}"
             ratingBar.rating = movie.rating.toFloat()
+            movieTitleTextView.setOnClickListener {
+                onMovieClickListener.onMovieClick(movie)
+            }
         }
     }
 
@@ -48,10 +57,12 @@ class MoviesListAdapter(private val movies: List<Movie>, private val filter: Fil
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val movie = if (hasQueryResults()) queryResults!![position] else movies[position]
-        holder.bind(movie = movie)
+        holder.bind(movie = movie, onMovieClickListener = onMovieClickListener)
     }
 
-    private fun hasQueryResults() = queryResults != null
+    private fun hasQueryResults(): Boolean {
+        return queryResults != null && queryResults!!.isNotEmpty()
+    }
 
     override fun getFilter(): Filter {
         return filter
@@ -61,9 +72,27 @@ class MoviesListAdapter(private val movies: List<Movie>, private val filter: Fil
         if (results == null) {
             queryResults = null
 
+        } else {
+            queryResults = results
+            notifyDataSetChanged()
         }
-        queryResults = results
-        notifyDataSetChanged()
+    }
+
+    interface OnMovieClickListener {
+        fun onMovieClick(movie: Movie)
+    }
+
+    companion object {
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Movie>() {
+            override fun areItemsTheSame(oldItem: Movie, newItem: Movie): Boolean {
+                return oldItem.title == newItem.title
+            }
+
+            override fun areContentsTheSame(oldItem: Movie, newItem: Movie): Boolean {
+                return oldItem == newItem
+            }
+
+        }
     }
 
 }

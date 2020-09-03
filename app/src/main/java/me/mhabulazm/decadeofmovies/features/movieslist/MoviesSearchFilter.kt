@@ -6,7 +6,9 @@ import me.mhabulazm.decadeofmovies.model.Movie
 import me.mhabulazm.decadeofmovies.utils.limitMoviesToFiveByYear
 import me.mhabulazm.decadeofmovies.utils.sortByYearDescending
 
-class MoviesSearchFilter(private val callback: ResultPublish) : Filter() {
+class MoviesSearchFilter(
+    private val callback: ResultPublish,
+    private val moviesList: List<Movie>) : Filter() {
 
     interface ResultPublish {
         fun publishResults(movies: List<Movie>?)
@@ -27,7 +29,7 @@ class MoviesSearchFilter(private val callback: ResultPublish) : Filter() {
             val queryResults = filterResults.values as List<Movie>
             callback.publishResults(queryResults.sortByYearDescending().limitMoviesToFiveByYear())
         } else {
-            callback.publishResults(null)
+            callback.publishResults(moviesList)
 
         }
 

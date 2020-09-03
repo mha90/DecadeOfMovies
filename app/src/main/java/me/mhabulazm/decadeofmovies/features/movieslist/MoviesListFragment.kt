@@ -1,24 +1,30 @@
 package me.mhabulazm.decadeofmovies.features.movieslist
 
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
 import me.mhabulazm.decadeofmovies.R
 import me.mhabulazm.decadeofmovies.data.MoviesLocalDataSource
+import me.mhabulazm.decadeofmovies.features.main.MainActivityConnector
+import me.mhabulazm.decadeofmovies.features.moviedetails.MovieDetailsFragment
 import me.mhabulazm.decadeofmovies.model.Movie
 import me.mhabulazm.decadeofmovies.utils.parseMoviesList
 import me.mhabulazm.decadeofmovies.utils.readRawFile
 
-class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish {
+
+class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish,
+    MoviesListAdapter.OnMovieClickListener {
 
     private var adapter: MoviesListAdapter? = null
     private lateinit var filter: MoviesSearchFilter
@@ -38,7 +44,6 @@ class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        initFilter()
         initAdapter()
         attachTextWatcher()
     }
@@ -49,8 +54,9 @@ class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish {
 
         if (moviesList != null) {
             MoviesLocalDataSource.populateTrie(moviesList)
+            initFilter(moviesList)
 
-            adapter = MoviesListAdapter(moviesList, filter)
+            adapter = MoviesListAdapter(moviesList, filter, this)
             moviesRecyclerView.layoutManager =
                 LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
             moviesRecyclerView.adapter = adapter
@@ -76,8 +82,8 @@ class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish {
         moviesSearchEditText.addTextChangedListener(textWatcher)
     }
 
-    private fun initFilter() {
-        filter = MoviesSearchFilter(this)
+    private fun initFilter(moviesList: List<Movie>) {
+        filter = MoviesSearchFilter(this, moviesList)
     }
 
     override fun publishResults(movies: List<Movie>?) {
@@ -95,6 +101,22 @@ class MoviesListFragment : Fragment(), MoviesSearchFilter.ResultPublish {
 
         fun newInstance(): MoviesListFragment {
             return MoviesListFragment()
+        }
+    }
+
+    fun hideKeyboardFrom(context: Context, view: View) {
+        val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    override fun onMovieClick(movie: Movie) {
+        hideKeyboardFrom(requireContext(), moviesSearchEditText)
+        if (requireActivity() is MainActivityConnector) {
+            (requireActivity() as MainActivityConnector).addFragment(
+                MovieDetailsFragment.newInstance(
+                    movie
+                ), true
+            )
         }
     }
 
